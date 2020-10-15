@@ -67,7 +67,7 @@ def new_ball(x, y, color):
     r = 30
     circle(screen, color, (x, y), r)
 def star(x, y, color):
-    '''рисует новый шарик '''
+    '''рисует звезду '''
     polygon(screen, color, [[x-15, y], [x-9, y-3], [x-12, y-12], [x-3, y-9], [x, y-15],
                             [x+3, y-9], [x+12, y-12], [x+9, y-3], [x+15, y],
                             [x+9, y+3], [x+12, y+12], [x+3, y+9], [x, y+15],
