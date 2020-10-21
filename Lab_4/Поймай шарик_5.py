@@ -73,13 +73,45 @@ def star(x, y, color):
                             [x+9, y+3], [x+12, y+12], [x+3, y+9], [x, y+15],
                             [x-3, y+9], [x-12, y+12], [x-9, y+3]])
 def draw_score(score):
+    '''рисует количество очков '''
     text = str(score)
     surface = font.render(text, False, (0, 0, 0))
-    screen.blit(surface, (100, 60))   
+    screen.blit(surface, (100, 60))  
+def table_read():
+    '''записывает упорядоченную таблицу игроков '''
+    lines = file.readlines()
+    res = []
+    for line in lines:
+        res.append(line[0: -1])
+    r = []
+    N = 0
+    for resl in res:
+        r.append(resl.split(" "))
+        N +=1
+    for i in range(N-1):
+        for j in range(N-i-1):
+            r[j][1] = int(r[j][1])
+            r[j+1][1] = int(r[j+1][1])
+            if r[j][1] < r[j+1][1]:
+                r[j], r[j+1] = r[j+1], r[j]
+    return(r)
+def draw_table(r):
+    '''выводит результаты лучших 5 игроков на экран '''
+    k = 50
+    i = 0
+    for line in r:
+        text = str(line[0]) + '   ' + str(line[1])
+        surface = font.render(text, False, (0, 0, 0))
+        screen.blit(surface, (1000, k)) 
+        k += 30
+        i += 1
+        if i == 5:
+            break
+    
         
-
 name = input('Введите имя: ')
-res = open('C:/Users/Филипп/Documents/github/PhilippK/Lab_4/Results.txt', 'a')
+file = open('C:/Users/Филипп/Documents/github/PhilippK/Lab_4/Results.txt', 'r')
+resuls = table_read()
 
 clock = pygame.time.Clock()
 finished = False
@@ -88,6 +120,7 @@ surname = font.render(name, False, (0, 0, 0))
 screen.blit(surname, (30, 30))
 score = 0
 draw_score(score)
+draw_table(resuls)
 ball_1_define()
 ball_2_define()
 ball_3_define()
@@ -125,6 +158,7 @@ while not finished:
                 l1 = 1
                 screen.fill(WHITE)
                 draw_score(score)
+                draw_table(resuls)
                 new_ball(x1, y1, color1)
                 screen.blit(surname, (30, 30))
             if (event.pos[0] - x2)**2 + (event.pos[1] - y2)**2 <= r**2:
@@ -134,6 +168,7 @@ while not finished:
                 l2 = 1
                 screen.fill(WHITE)
                 draw_score(score)
+                draw_table(resuls)
                 new_ball(x2, y2, color2)
                 screen.blit(surname, (30, 30))
             if (event.pos[0] - x3)**2 + (event.pos[1] - y3)**2 <= r**2:
@@ -143,6 +178,7 @@ while not finished:
                 l3 = 1
                 screen.fill(WHITE)
                 draw_score(score)
+                draw_table(resuls)
                 new_ball(x3, y3, color3)
                 screen.blit(surname, (30, 30))
             if (event.pos[0] - x4)**2 + (event.pos[1] - y4)**2 <= 81:
@@ -152,6 +188,7 @@ while not finished:
                 l4 = 1
                 screen.fill(WHITE)
                 draw_score(score)
+                draw_table(resuls)
                 star(x4, y4, color4)
                 screen.blit(surname, (30, 30))
     x1 = x1 + a1
@@ -188,6 +225,7 @@ while not finished:
         b3 *= -1
     screen.fill(WHITE)
     draw_score(score)
+    draw_table(resuls)
     star(x4, y4, color4)
     new_ball(x1, y1, color1)
     new_ball(x2, y2, color2)
@@ -200,7 +238,9 @@ while not finished:
     l3 += 1
     l4 += 1
     
+file.close()
 score = str(score)
+res = open('C:/Users/Филипп/Documents/github/PhilippK/Lab_4/Results.txt', 'a')
 res.write(name + ' ' + score + '\n')
 res.close()
 
