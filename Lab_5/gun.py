@@ -14,19 +14,18 @@ class Manager():
         self.gun = Gun()
         self.score_t = Table()
         self.balls = []
-        self.balls.append(Ball([0, 0], [80, 10]))
+        
+    def draw(self, screen):
+        screen.fill(BLACK)
+        for ball in self.balls:
+            ball.draw(screen)
+        self.gun.draw(screen)
     
     def process(self, events, screen):
         done = self.handle_events(events)
         self.move()
         self.draw(screen)
         return done
-    
-    def draw(self, screen):
-        screen.fill(BLACK)
-        for ball in self.balls:
-            ball.draw(screen)
-        self.gun.draw(screen)
     
     def move(self):
         for ball in self.balls:
@@ -37,6 +36,12 @@ class Manager():
         for event in events:
             if event.type == pg.QUIT:
                 done = True
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.gun.active = True
+            elif event.type == pg.MOUSEBUTTONUP:
+                if event.button == 1:
+                    self.balls.append(self.gun.strike())
             if pg.mouse.get_focused():
                 mouse_pos = pg.mouse.get_pos()
                 self.gun.set_angle(mouse_pos)
@@ -44,25 +49,27 @@ class Manager():
         self.draw(screen)
         return done
 class Gun():
-    def __init__(self, coord = [30, SCREEN_SIZE[1]//2]):
+    def __init__(self, coord = [30, SCREEN_SIZE[1]//2],
+                 min_pow = 10, max_pow = 20):
         self.coord = coord
         self.angle = 0
         self.color = WHITE
+        self.min_pow = min_pow
+        self.max_pow = max_pow
+        self.power = min_pow
+        self.active = False
         
     def draw(self, screen):
-        gun_shape = [[self.coord[0]+int(20*np.cos(self.angle)-8*np.sin(self.angle)), 
-                     self.coord[1]+int(20*np.sin(self.angle)+8*np.cos(self.angle))],
-                     [self.coord[0]+int(20*np.cos(self.angle)+8*np.sin(self.angle)), 
-                     self.coord[1]+int(20*np.sin(self.angle)-8*np.cos(self.angle))],
-                     [self.coord[0]+int(-10*np.cos(self.angle)+8*np.sin(self.angle)), 
-                     self.coord[1]+int(-10*np.sin(self.angle)-8*np.cos(self.angle))],
-                     [self.coord[0]+int(-10*np.cos(self.angle)-8*np.sin(self.angle)), 
-                     self.coord[1]+int(-10*np.sin(self.angle)+8*np.cos(self.angle))]]
-        pg.draw.polygon(screen, self.color, gun_shape)
+        end_pos = [self.coord[0] + self.power*np.cos(self.angle), 
+                   self.coord[1] + self.power*np.sin(self.angle)]
+        pg.draw.line(screen, self.color, self.coord, end_pos, 8)
         
         
     def strike(self):
-        pass
+        vel = [int(self.power * np.cos(self.angle)), int(self.power * np.sin(self.angle))]
+        self.active = False
+        self.power = self.min_pow
+        return Ball(list(self.coord), vel)
     
     def set_angle(self, mouse_pos):
         self.angle = np.arctan2(mouse_pos[1] - self.coord[1],
