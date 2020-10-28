@@ -17,4 +17,4 @@ class Vectors():
     def __abs__(self):
         return((self.x**2 + self.y**2 + self.z**2)**0.5)
     def __pow__(self, inst):
-        return Vectors(self.y*inst.z - self.z*inst.y, -self.x*inst.z + self.z*inst.x, self.x*inst.y - self.y*inst.x)
+        return Vectors(self.y*inst.z - self.z*inst.y, - self.x*inst.z + self.z*inst.x, self.x*inst.y - self.y*inst.x)
