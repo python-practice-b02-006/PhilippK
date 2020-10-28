@@ -13,10 +13,8 @@ class Manager():
     def __init__(self):
         self.gun = Gun()
         self.score_t = Table()
-        
-    def draw(self, screen):
-        screen.fill(BLACK)
-        self.gun.draw(screen)
+        self.balls = []
+        self.balls.append(Ball([0, 0], [80, 10]))
     
     def process(self, events, screen):
         done = self.handle_events(events)
@@ -26,10 +24,13 @@ class Manager():
     
     def draw(self, screen):
         screen.fill(BLACK)
+        for ball in self.balls:
+            ball.draw(screen)
         self.gun.draw(screen)
     
     def move(self):
-        pass
+        for ball in self.balls:
+            ball.move()
     
     def handle_events(self, events):
         done = False
@@ -71,7 +72,41 @@ class Gun():
 class Table():
     pass
 class Ball():
-    pass
+    def __init__(self, coord, vel, color=None, rad=15):
+        if color == None:
+            color = (randint(100, 255), randint(0, 255), randint(0, 255))
+        self.coord = coord
+        self.vel = vel
+        self.color = color
+        self.rad = rad
+        self.is_alive = True
+
+    def draw(self, screen):
+        pg.draw.circle(screen, self.color, self.coord, self.rad)
+        
+    def move(self, t_step = 1):
+        for i in range(2):
+            self.coord[i] += self.vel[i]*t_step
+        self.check_walls()
+    
+    def check_walls(self):
+        n = [[1, 0], [0, 1]]
+        for i in range(2):
+            if self.coord[i] < self.rad:
+                self.coord[i] = self.rad
+                self.flip_vel(n[i])
+            elif self.coord[i] > SCREEN_SIZE[i] - self.rad:
+                self.coord[i] = SCREEN_SIZE[i] - self.rad
+                self.flip_vel(n[i])
+    
+    def flip_vel(self, axis, coef_perp=1., coef_par=1.):
+        vel = np.array(self.vel)
+        n = np.array(axis)
+        n = n / np.linalg.norm(n)
+        vel_perp = vel.dot(n) * n
+        vel_par = vel - vel_perp
+        ans = -vel_perp * coef_perp + vel_par * coef_par
+        self.vel = ans.astype(np.int).tolist()
         
 mgr = Manager()
 screen = pg.display.set_mode(SCREEN_SIZE)
