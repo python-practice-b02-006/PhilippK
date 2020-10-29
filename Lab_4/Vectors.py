@@ -14,6 +14,11 @@ class Vectors():
             return(self.x*k.x + self.y*k.y + self.z*k.z)
         else:
             return Vectors(self.x*k, self.y*k, self.z*k)
+    def __rmul__(self, k):
+        if type(k) is Vectors:
+            return(self.x*k.x + self.y*k.y + self.z*k.z)
+        else:
+            return Vectors(self.x*k, self.y*k, self.z*k)
     def __abs__(self):
         return((self.x**2 + self.y**2 + self.z**2)**0.5)
     def __pow__(self, inst):
