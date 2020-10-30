@@ -28,8 +28,13 @@ class Manager():
         return done
     
     def move(self):
-        for ball in self.balls:
+        dead_balls = []
+        for i, ball in enumerate(self.balls):
             ball.move()
+            if not ball.is_alive:
+                dead_balls.append(i)
+        for i in reversed(dead_balls):
+            self.balls.pop(i)
         self.gun.move()
     
     def handle_events(self, events):
@@ -108,6 +113,8 @@ class Ball():
         self.vel[1] += 2
         self.coord[1] += self.vel[1]*t_step
         self.check_walls()
+        if self.vel[0]**2 + self.vel[1]**2 <= 1:
+            self.is_alive = False
     
     def check_walls(self):
         n = [[1, 0], [0, 1]]
