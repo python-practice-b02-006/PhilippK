@@ -30,6 +30,7 @@ class Manager():
     def move(self):
         for ball in self.balls:
             ball.move()
+        self.gun.move()
     
     def handle_events(self, events):
         done = False
@@ -42,21 +43,24 @@ class Manager():
             elif event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:
                     self.balls.append(self.gun.strike())
+                    self.gun.move()
             if pg.mouse.get_focused():
                 mouse_pos = pg.mouse.get_pos()
                 self.gun.set_angle(mouse_pos)
         
         self.draw(screen)
         return done
+    
+    
 class Gun():
     def __init__(self, coord = [30, SCREEN_SIZE[1]//2],
-                 min_pow = 10, max_pow = 20):
+                 min_pow = 5, max_pow = 50):
         self.coord = coord
         self.angle = 0
         self.color = WHITE
         self.min_pow = min_pow
         self.max_pow = max_pow
-        self.power = min_pow
+        self.power = self.min_pow
         self.active = False
         
     def draw(self, screen):
@@ -64,6 +68,12 @@ class Gun():
                    self.coord[1] + self.power*np.sin(self.angle)]
         pg.draw.line(screen, self.color, self.coord, end_pos, 8)
         
+    def active(self):
+        self.active = True
+    
+    def elongation(self, inc=1):
+        if self.active and self.power < self.max_pow:
+            self.power += inc
         
     def strike(self):
         vel = [int(self.power * np.cos(self.angle)), int(self.power * np.sin(self.angle))]
@@ -74,6 +84,8 @@ class Gun():
     def set_angle(self, mouse_pos):
         self.angle = np.arctan2(mouse_pos[1] - self.coord[1],
                                 mouse_pos[0] - self.coord[0])
+    def move(self):
+        self.elongation()
     
     
 class Table():
@@ -92,8 +104,9 @@ class Ball():
         pg.draw.circle(screen, self.color, self.coord, self.rad)
         
     def move(self, t_step = 1):
-        for i in range(2):
-            self.coord[i] += self.vel[i]*t_step
+        self.coord[0] += self.vel[0]*t_step
+        self.vel[1] += 2
+        self.coord[1] += self.vel[1]*t_step
         self.check_walls()
     
     def check_walls(self):
@@ -102,9 +115,13 @@ class Ball():
             if self.coord[i] < self.rad:
                 self.coord[i] = self.rad
                 self.flip_vel(n[i])
+                self.vel[0] = int(0.9*self.vel[0])
+                self.vel[1] = int(0.9*self.vel[1])
             elif self.coord[i] > SCREEN_SIZE[i] - self.rad:
                 self.coord[i] = SCREEN_SIZE[i] - self.rad
                 self.flip_vel(n[i])
+                self.vel[0] = int(0.9*self.vel[0])
+                self.vel[1] = int(0.9*self.vel[1])
     
     def flip_vel(self, axis, coef_perp=1., coef_par=1.):
         vel = np.array(self.vel)
