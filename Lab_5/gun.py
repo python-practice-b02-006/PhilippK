@@ -9,22 +9,36 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
+def rand_color():
+    return (randint(0, 255), randint(0, 255), randint(0, 255))
+
 class Manager():
     def __init__(self):
         self.gun = Gun()
         self.score_t = Table()
         self.balls = []
+        self.targets = []
+        self.n_targets = 3
+        
+    def new_mission(self):
+        for i in range(self.n_targets):
+            self.targets.append(Target())
         
     def draw(self, screen):
         screen.fill(BLACK)
         for ball in self.balls:
             ball.draw(screen)
         self.gun.draw(screen)
+        for target in self.targets:
+            target.draw(screen)
     
     def process(self, events, screen):
         done = self.handle_events(events)
         self.move()
+        self.collide()
         self.draw(screen)
+        if len(self.targets) == 0 and len(self.balls) == 0:
+            self.new_mission()
         return done
     
     def move(self):
@@ -55,6 +69,17 @@ class Manager():
         
         self.draw(screen)
         return done
+    
+    def collide(self):
+        collisions = []
+        targets_killed = []
+        for i, ball in enumerate(self.balls):
+            for j, target in enumerate(self.targets):
+                if target.check_collision(ball):
+                    collisions.append([i, j])
+                    targets_killed.append(j)
+        for j in targets_killed:
+            self.targets.pop(j)
     
     
 class Gun():
@@ -138,6 +163,24 @@ class Ball():
         vel_par = vel - vel_perp
         ans = -vel_perp * coef_perp + vel_par * coef_par
         self.vel = ans.astype(np.int).tolist()
+        
+class Target():
+    def __init__(self, rad=30):
+        coord = [randint(rad, SCREEN_SIZE[0] - rad),
+                 randint(rad, SCREEN_SIZE[1] - rad)]
+        self.coord = coord
+        self.rad = rad
+        color = rand_color()
+        self.color = color
+        
+    def draw(self, screen):
+        pg.draw.circle(screen, self.color, self.coord, self.rad)
+        
+    def check_collision(self, ball):
+        dist = sum([(self.coord[i] - ball.coord[i])**2 for i in range(2)])**0.5
+        min_dist = self.rad + ball.rad
+        return dist <= min_dist
+    
         
 mgr = Manager()
 screen = pg.display.set_mode(SCREEN_SIZE)
