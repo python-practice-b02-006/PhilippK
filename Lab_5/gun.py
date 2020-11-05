@@ -13,6 +13,7 @@ def rand_color():
     return (randint(0, 255), randint(0, 255), randint(0, 255))
 
 class Manager():
+    '''Класс, регулирующий все события в игровом окне.'''
     def __init__(self):
         self.time = 0
         self.gun = Gun()
@@ -23,6 +24,7 @@ class Manager():
         self.n_targets = 3
         
     def new_mission(self):
+        '''переход к новой миссии'''
         for i in range(self.n_targets):
             self.targets.append(Target(max(33 - self.n_targets, 1)))
         self.n_targets += 1
@@ -83,6 +85,7 @@ class Manager():
         return done
     
     def collide(self):
+        '''уничтожение мишени'''
         collisions = []
         targets_killed = []
         for i, ball in enumerate(self.balls):
@@ -93,6 +96,7 @@ class Manager():
         for j in targets_killed:
             self.targets.pop(j)
     def end(self):
+        '''конец игры'''
         screen.fill(BLACK)
         font = pg.font.SysFont("dejavusansmono", 50)
         score_surf = font.render("Game over! Your level: {}...".format(self.level), True, WHITE)
@@ -100,6 +104,8 @@ class Manager():
     
     
 class Gun():
+    '''Класс пушки. Создает пушку, реализует её отрисовку, 
+       прицеливание, выстрелы.'''
     def __init__(self, coord = [30, SCREEN_SIZE[1]//2],
                  min_pow = 5, max_pow = 50):
         self.coord = coord
@@ -136,6 +142,8 @@ class Gun():
     
     
 class Table():
+    '''Класс таблички. Отображает текущий уровень,
+       оставшееся время (в секундах).'''
     def __init__(self, level, time):
         self.level = level
         self.time = int(180 - time / 30)
@@ -149,6 +157,8 @@ class Table():
             
             
 class Ball():
+    '''Класс шариков. Создает шарики, реализует их отрисовку, движение
+       отражение от стен.'''
     def __init__(self, coord, vel, color=None, rad=10):
         if color == None:
             color = (randint(100, 255), randint(0, 255), randint(0, 255))
@@ -193,6 +203,8 @@ class Ball():
         self.vel = ans.astype(np.int).tolist()
         
 class Target():
+    '''Класс мишеней. Создает мишень, реализует её отрисовку,
+       проверяет близость снарядов.'''
     def __init__(self, rad):
         coord = [randint(rad, SCREEN_SIZE[0] - rad),
                  randint(rad, SCREEN_SIZE[1] - rad)]
