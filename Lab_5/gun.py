@@ -15,7 +15,8 @@ def rand_color():
 class Manager():
     def __init__(self):
         self.gun = Gun()
-        self.score_t = Table()
+        self.level = 0
+        self.table = Table(self.level)
         self.balls = []
         self.targets = []
         self.n_targets = 3
@@ -24,9 +25,13 @@ class Manager():
         for i in range(self.n_targets):
             self.targets.append(Target(max(33 - self.n_targets, 1)))
         self.n_targets += 1
+        self.level += 1
+        self.table = Table(self.level)
+        
         
     def draw(self, screen):
         screen.fill(BLACK)
+        self.table.draw(screen)
         for ball in self.balls:
             ball.draw(screen)
         self.gun.draw(screen)
@@ -120,9 +125,17 @@ class Gun():
     
     
 class Table():
-    pass
+    def __init__(self, level):
+        self.level = level
+        self.font = pg.font.SysFont("dejavusansmono", 25)
+
+    def draw(self, screen):
+        score_surf = self.font.render("Level: {}".format(self.level), True, WHITE)
+        screen.blit(score_surf, [10, 10])
+            
+            
 class Ball():
-    def __init__(self, coord, vel, color=None, rad=15):
+    def __init__(self, coord, vel, color=None, rad=10):
         if color == None:
             color = (randint(100, 255), randint(0, 255), randint(0, 255))
         self.coord = coord
