@@ -22,7 +22,8 @@ class Manager():
         
     def new_mission(self):
         for i in range(self.n_targets):
-            self.targets.append(Target())
+            self.targets.append(Target(max(33 - self.n_targets, 1)))
+        self.n_targets += 1
         
     def draw(self, screen):
         screen.fill(BLACK)
@@ -165,7 +166,7 @@ class Ball():
         self.vel = ans.astype(np.int).tolist()
         
 class Target():
-    def __init__(self, rad=30):
+    def __init__(self, rad):
         coord = [randint(rad, SCREEN_SIZE[0] - rad),
                  randint(rad, SCREEN_SIZE[1] - rad)]
         self.coord = coord
