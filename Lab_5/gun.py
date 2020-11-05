@@ -188,7 +188,7 @@ screen = pg.display.set_mode(SCREEN_SIZE)
 done = False
 clock = pg.time.Clock()
 while not done:
-    clock.tick(15)
+    clock.tick(30)
     done = mgr.process(pg.event.get(), screen)
     pg.display.flip()
 pg.quit()
