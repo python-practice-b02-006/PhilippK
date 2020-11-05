@@ -110,7 +110,7 @@ def draw_table(r):
     
         
 name = input('Введите имя: ')
-file = open('C:/Users/Филипп/Documents/github/PhilippK/Lab_4/Results.txt', 'r')
+file = open('Results.txt', 'a+')
 resuls = table_read()
 
 clock = pygame.time.Clock()
@@ -240,7 +240,7 @@ while not finished:
     
 file.close()
 score = str(score)
-res = open('C:/Users/Филипп/Documents/github/PhilippK/Lab_4/Results.txt', 'a')
+res = open('Results.txt', 'a+')
 res.write(name + ' ' + score + '\n')
 res.close()
 
