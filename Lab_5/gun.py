@@ -14,9 +14,10 @@ def rand_color():
 
 class Manager():
     def __init__(self):
+        self.time = 0
         self.gun = Gun()
         self.level = 0
-        self.table = Table(self.level)
+        self.table = Table(self.level, self.time)
         self.balls = []
         self.targets = []
         self.n_targets = 3
@@ -26,7 +27,6 @@ class Manager():
             self.targets.append(Target(max(33 - self.n_targets, 1)))
         self.n_targets += 1
         self.level += 1
-        self.table = Table(self.level)
         
         
     def draw(self, screen):
@@ -39,12 +39,18 @@ class Manager():
             target.draw(screen)
     
     def process(self, events, screen):
-        done = self.handle_events(events)
-        self.move()
-        self.collide()
-        self.draw(screen)
-        if len(self.targets) == 0 and len(self.balls) == 0:
-            self.new_mission()
+        if self.time >= 5400:
+            done = self.handle_events(events)
+            self.end()
+        else:    
+            done = self.handle_events(events)
+            self.move()
+            self.collide()
+            self.draw(screen)
+            if len(self.targets) == 0 and len(self.balls) == 0:
+                self.new_mission()
+        self.time += 1
+        self.table = Table(self.level, self.time)
         return done
     
     def move(self):
@@ -86,6 +92,11 @@ class Manager():
                     targets_killed.append(j)
         for j in targets_killed:
             self.targets.pop(j)
+    def end(self):
+        screen.fill(BLACK)
+        font = pg.font.SysFont("dejavusansmono", 50)
+        score_surf = font.render("Game over! Your level: {}...".format(self.level), True, WHITE)
+        screen.blit(score_surf, [200, 200])
     
     
 class Gun():
@@ -125,13 +136,16 @@ class Gun():
     
     
 class Table():
-    def __init__(self, level):
+    def __init__(self, level, time):
         self.level = level
+        self.time = int(180 - time / 30)
         self.font = pg.font.SysFont("dejavusansmono", 25)
 
     def draw(self, screen):
-        score_surf = self.font.render("Level: {}".format(self.level), True, WHITE)
-        screen.blit(score_surf, [10, 10])
+        score_surf_level = self.font.render("Level: {}".format(self.level), True, WHITE)
+        score_surf_time = self.font.render("Time: {}".format(self.time), True, WHITE)
+        screen.blit(score_surf_level, [10, 10])
+        screen.blit(score_surf_time, [10, 30])
             
             
 class Ball():
