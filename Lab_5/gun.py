@@ -176,7 +176,8 @@ class Ball():
         self.vel[1] += 2
         self.coord[1] += self.vel[1]*t_step
         self.check_walls()
-        if self.vel[0]**2 + self.vel[1]**2 <= 1:
+        if (self.vel[0]**2 + self.vel[1]**2 <= 1) & (
+                self.coord[1] >= SCREEN_SIZE[1] - 3*self.rad):
             self.is_alive = False
     
     def check_walls(self):
