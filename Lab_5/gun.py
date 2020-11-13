@@ -22,12 +22,25 @@ class Manager():
         self.balls = []
         self.targets = []
         self.n_targets = 3
+        self.wall_targets = []
+        self.n_wall_targets = 1
+        self.wall_targets_coord = []
         
     def new_mission(self):
         '''переход к новой миссии'''
         for i in range(self.n_targets):
             self.targets.append(Target(max(33 - self.n_targets, 1)))
         self.n_targets += 1
+        k = randint(0, 1)
+        if k == 0:
+            t = 1
+        else:
+            t = 0
+        self.wall_targets.append(Wall_Target([k, t]))
+        for wall_target in self.wall_targets:
+            с = wall_target.coords()
+            self.wall_targets_coord.append(с)
+        self.n_wall_targets += 1
         self.level += 1
         
         
@@ -53,12 +66,14 @@ class Manager():
                 self.new_mission()
         self.time += 1
         self.table = Table(self.level, self.time)
+        for wall_target in self.wall_targets:
+            wall_target.draw(screen)
         return done
     
     def move(self):
         dead_balls = []
         for i, ball in enumerate(self.balls):
-            ball.move()
+            ball.move(self.wall_targets_coord)
             if not ball.is_alive:
                 dead_balls.append(i)
         for i in reversed(dead_balls):
@@ -97,6 +112,8 @@ class Manager():
             self.targets.pop(j)
     def end(self):
         '''конец игры'''
+        self.wall_targets = []
+        self.n_wall_targets = 0
         screen.fill(BLACK)
         font = pg.font.SysFont("dejavusansmono", 50)
         score_surf = font.render("Game over! Your level: {}...".format(self.level), True, WHITE)
@@ -171,16 +188,16 @@ class Ball():
     def draw(self, screen):
         pg.draw.circle(screen, self.color, self.coord, self.rad)
         
-    def move(self, t_step = 1):
+    def move(self, wall_coord, t_step = 1):
         self.coord[0] += self.vel[0]*t_step
         self.vel[1] += 2
         self.coord[1] += self.vel[1]*t_step
-        self.check_walls()
+        self.check_walls(wall_coord)
         if (self.vel[0]**2 + self.vel[1]**2 <= 1) & (
                 self.coord[1] >= SCREEN_SIZE[1] - 3*self.rad):
             self.is_alive = False
     
-    def check_walls(self):
+    def check_walls(self, wall_coord):
         n = [[1, 0], [0, 1]]
         for i in range(2):
             if self.coord[i] < self.rad:
@@ -193,6 +210,43 @@ class Ball():
                 self.flip_vel(n[i])
                 self.vel[0] = int(0.9*self.vel[0])
                 self.vel[1] = int(0.9*self.vel[1])
+        for wall in wall_coord:
+            g = self.rad + int(0.15*np.abs(self.vel[0]))
+            v = self.rad + int(0.15*np.abs(self.vel[1]))
+            if (wall[0][0] == wall[1][0]) & (self.vel[0]**2 + self.vel[1]**2 > 0):
+                if (wall[0][0] - self.coord[0] > 0) & (wall[0][0] - self.coord[0] <= 2*g) & (
+                         self.coord[1] >= wall[0][1] - v) & (self.coord[1] <= wall[1][1] + v) & (
+                             self.vel[0] > 0):
+                    self.flip_vel(n[0])
+                if (wall[0][0] - self.coord[0] < 0) & (wall[0][0] - self.coord[0] >= -2*g) & (
+                         self.coord[1] >= wall[0][1] - v) & (self.coord[1] <= wall[1][1] + v) & (
+                             self.vel[0] < 0):
+                    self.flip_vel(n[0])
+                if (wall[0][1] - self.coord[1] > 0) & (wall[0][1] - self.coord[1] <= 2*v) & (
+                         self.coord[0] >= wall[0][0] - g) & (self.coord[0] <= wall[0][0] + g) & (
+                             self.vel[1] > 0):
+                    self.flip_vel(n[1])  
+                if (wall[0][1] - self.coord[1] < 0) & (wall[0][1] - self.coord[1] >= -2*v) & (
+                         self.coord[0] >= wall[0][0] - g) & (self.coord[0] <= wall[0][0] + g) & (
+                             self.vel[1] < 0):
+                    self.flip_vel(n[1])
+            if (wall[0][1] == wall[1][1]) & (self.vel[0]**2 + self.vel[1]**2 > 0):
+                if (wall[0][1] - self.coord[1] > 0) & (wall[0][1] - self.coord[1] <= 2*v) & (
+                         self.coord[0] >= wall[0][0] - g) & (self.coord[0] <= wall[1][0] + g) & (
+                             self.vel[1] > 0):
+                    self.flip_vel(n[1])  
+                if (wall[0][1] - self.coord[1] < 0) & (wall[0][1] - self.coord[1] >= -2*v) & (
+                         self.coord[0] >= wall[0][0] - g) & (self.coord[0] <= wall[1][0] + g) & (
+                             self.vel[1] < 0):
+                    self.flip_vel(n[1])
+                if (wall[0][0] - self.coord[0] > 0) & (wall[0][0] - self.coord[0] <= 2*g) & (
+                         self.coord[1] >= wall[0][1] - v) & (self.coord[1] <= wall[0][1] + v) & (
+                             self.vel[0] > 0):
+                    self.flip_vel(n[0])
+                if (wall[0][0] - self.coord[0] < 0) & (wall[0][0] - self.coord[0] >= -2*g) & (
+                         self.coord[1] >= wall[0][1] - v) & (self.coord[1] <= wall[0][1] + v) & (
+                             self.vel[0] < 0):
+                    self.flip_vel(n[0])        
     
     def flip_vel(self, axis, coef_perp=1., coef_par=1.):
         vel = np.array(self.vel)
@@ -221,6 +275,25 @@ class Target():
         dist = sum([(self.coord[i] - ball.coord[i])**2 for i in range(2)])**0.5
         min_dist = self.rad + ball.rad
         return dist <= min_dist
+    
+class Wall_Target():
+    def __init__(self, vector):
+        coord = [randint(10, SCREEN_SIZE[0] - 10),
+                 randint(10, SCREEN_SIZE[1] - 10)]
+        self.coord = coord
+        color = rand_color()
+        self.color = color
+        self.vector = vector
+        i = self.vector[0]
+        j = self.vector[1]
+        self.end_pos = [self.coord[0] + 60*i, 
+                   self.coord[1] + 60*j]
+        
+    def draw(self, screen):
+        pg.draw.line(screen, self.color, self.coord, self.end_pos, 6)
+        
+    def coords(self):
+        return([self.coord, self.end_pos])
     
         
 mgr = Manager()
