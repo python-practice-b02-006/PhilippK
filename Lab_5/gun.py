@@ -12,6 +12,7 @@ RED = (255, 0, 0)
 def rand_color():
     return (randint(0, 255), randint(0, 255), randint(0, 255))
 
+
 class Manager():
     '''Класс, регулирующий все события в игровом окне.'''
     def __init__(self):
@@ -42,8 +43,7 @@ class Manager():
             self.wall_targets_coord.append(с)
         self.n_wall_targets += 1
         self.level += 1
-        
-        
+            
     def draw(self, screen):
         screen.fill(BLACK)
         self.table.draw(screen)
@@ -146,7 +146,8 @@ class Gun():
             self.power += inc
         
     def strike(self):
-        vel = [int(self.power * np.cos(self.angle)), int(self.power * np.sin(self.angle))]
+        vel = [int(self.power * np.cos(self.angle)),
+               int(self.power * np.sin(self.angle))]
         self.active = False
         self.power = self.min_pow
         return Ball(list(self.coord), vel)
@@ -167,8 +168,10 @@ class Table():
         self.font = pg.font.SysFont("dejavusansmono", 25)
 
     def draw(self, screen):
-        score_surf_level = self.font.render("Level: {}".format(self.level), True, WHITE)
-        score_surf_time = self.font.render("Time: {}".format(self.time), True, WHITE)
+        score_surf_level = self.font.render("Level: {}".format(self.level),
+                                            True, WHITE)
+        score_surf_time = self.font.render("Time: {}".format(self.time),
+                                           True, WHITE)
         screen.blit(score_surf_level, [10, 10])
         screen.blit(score_surf_time, [10, 30])
             
@@ -198,6 +201,7 @@ class Ball():
             self.is_alive = False
     
     def check_walls(self, wall_coord):
+        "Отражение от стен."
         n = [[1, 0], [0, 1]]
         for i in range(2):
             if self.coord[i] < self.rad:
@@ -257,6 +261,7 @@ class Ball():
         ans = -vel_perp * coef_perp + vel_par * coef_par
         self.vel = ans.astype(np.int).tolist()
         
+
 class Target():
     '''Класс мишеней. Создает мишень, реализует её отрисовку,
        проверяет близость снарядов.'''
@@ -276,7 +281,9 @@ class Target():
         min_dist = self.rad + ball.rad
         return dist <= min_dist
     
+
 class Wall_Target():
+    '''Класс стенок(коротких). Создает стенки и реализует их отрисовку.'''
     def __init__(self, vector):
         coord = [randint(10, SCREEN_SIZE[0] - 10),
                  randint(10, SCREEN_SIZE[1] - 10)]
